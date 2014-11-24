@@ -6,88 +6,68 @@ import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 public class MainActivity extends Activity {
-	Button btn1,btn2;
+    Button btn1, btn2;
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
-		btn1 = (Button)findViewById(R.id.button1);
-		btn2 = (Button)findViewById(R.id.button2);
-		btn1.setOnClickListener(new View.OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				//add  start 
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        btn1 = (Button) findViewById(R.id.button1);
+        btn2 = (Button) findViewById(R.id.button2);
+        btn1.setOnClickListener(new View.OnClickListener() {
 
-			    String examplePackageName = "com.baidu.home2"; //请修改为需要设置的 package name
-			    String exampleActivityName = "com.baidu.launcher.app.Launcher"; //请修改为需要设置的 launcher activity name
-			   
-			           Intent intent=new Intent(Intent.ACTION_MAIN);
-			           intent.addCategory(Intent.CATEGORY_HOME);
-			          
-			           List<ResolveInfo> resolveInfoList = getPackageManager().queryIntentActivities(intent, 0);
-			           if(resolveInfoList != null){
-			                    int size = resolveInfoList.size();
-			                    for(int j=0;j<size;){
-			                             final ResolveInfo r = resolveInfoList.get(j);
-			                             if(!r.activityInfo.packageName.equals(examplePackageName)){
-			                                       resolveInfoList.remove(j);
-			                                       size -= 1;
-			                              }else
-			                              {
-			                                      j++;
-			                              }
-			                    }
+            @Override
+            public void onClick(View v) {
+                // TODO Auto-generated method stub
+                
+            }
+        });
+        btn2.setOnClickListener(new View.OnClickListener() {
 
-			                    ComponentName[] set = new ComponentName[size];
-			                    ComponentName defaultLauncher=new ComponentName(examplePackageName, exampleActivityName);
+            @Override
+            public void onClick(View v) {
+                // TODO Auto-generated method stub
+//                try {
+                    removeDefault(); // a trick here to remove default settings
+//                } catch (Exception e) { 
+//                    e.printStackTrace();
+//                }
+//                getPackageManager().clearPackagePreferredActivities(
+//                        getPackageName());
+                Toast.makeText(MainActivity.this, "set!", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+    private void removeDefault() {
+        PackageManager localPackageManager = getPackageManager();
+        ComponentName localComponentName = new ComponentName(getPackageName(), DefaultActivity.class.getName());
+        localPackageManager.setComponentEnabledSetting(localComponentName, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
+        Intent localIntent = getHomeIntent();
+        localPackageManager.resolveActivity(localIntent, 0);
+        localPackageManager.setComponentEnabledSetting(localComponentName, PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+    }
 
-			                    int defaultMatch=0;
-			                    for(int i=0;i<size;i++){
-			                             final ResolveInfo resolveInfo = resolveInfoList.get(i);
-			                             set[i] = new ComponentName(resolveInfo.activityInfo.packageName,resolveInfo.activityInfo.name);
-			                             if(resolveInfo.match > defaultMatch){
-			                                       defaultMatch = resolveInfo.match;
-			                             }
-			                    }
+    private Intent getHomeIntent() {
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_HOME);
+        intent.addCategory(Intent.CATEGORY_DEFAULT);
+        return intent;
+    }
 
-
-			                    IntentFilter filter=new IntentFilter();
-			                    filter.addAction(Intent.ACTION_MAIN);
-			                    filter.addCategory(Intent.CATEGORY_HOME);
-			                    filter.addCategory(Intent.CATEGORY_DEFAULT);
-			                   
-			                    getPackageManager().clearPackagePreferredActivities(defaultLauncher.getPackageName());
-			                    getPackageManager().addPreferredActivity(filter, defaultMatch, set, defaultLauncher);
-			           }
-
-			           //add  end
-			}
-		});
-		btn2.setOnClickListener(new View.OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				// TODO Auto-generated method stub
-				
-			}
-		});
-	}
-
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.main, menu);
-		return true;
-	}
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
 
 }
